@@ -1,79 +1,834 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <title>Happy Birthday Chakshu 🎂</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Happy Birthday Chakshu ❤️</title>
+
+  <!-- Google Fonts: Great Vibes, Playfair Display, Special Elite, Caveat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,800;1,400;1,700&family=Special+Elite&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- Fixed background photo -->
-  <div class="bg-photo"></div>
-  <!-- Dark overlay -->
-  <div class="bg-overlay"></div>
+  <!-- SVG Filter definitions for paper textures and roughness -->
+  <svg class="svg-filters" aria-hidden="true" width="0" height="0">
+    <defs>
+      <!-- Crumpled paper turbulence filter -->
+      <filter id="crumpled-paper-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" result="noise" />
+        <feDiffuseLighting in="noise" lighting-color="#fff" surfaceScale="2.2" result="light">
+          <feDistantLight azimuth="45" elevation="55" />
+        </feDiffuseLighting>
+        <feBlend mode="multiply" in="SourceGraphic" in2="light" />
+      </filter>
 
-  <!-- Confetti / fireworks canvas -->
-  <canvas id="confetti-canvas"></canvas>
+      <!-- Torn paper rough edge filter -->
+      <filter id="torn-edge-filter">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
 
-  <!-- Balloon container -->
-  <div id="balloon-container"></div>
+  <!-- Lightweight canvas for floating hearts and falling petals -->
+  <canvas id="scrapbook-canvas"></canvas>
 
-  <!-- Music button -->
-  <button id="music-btn" class="music-btn" aria-label="Toggle music">
-    <span id="music-icon">🔇</span>
+  <!-- Global Always-Visible Music Pill Button -->
+  <button id="global-music-toggle" class="music-pill" aria-label="Toggle romantic music">
+    <span class="music-pill-vinyl">
+      <span class="vinyl-groove"></span>
+      <span class="vinyl-center"></span>
+    </span>
+    <span class="music-pill-bars">
+      <span class="bar bar-1"></span>
+      <span class="bar bar-2"></span>
+      <span class="bar bar-3"></span>
+    </span>
+    <span class="music-pill-text">Music</span>
   </button>
-  <audio id="bg-music" loop preload="none">
-    <source src="assets/music.mp3" type="audio/mpeg"/>
+
+  <!-- Audio Element with MP3 and WAV fallback -->
+  <audio id="bg-music" loop preload="auto">
+    <source src="assets/music.mp3" type="audio/mpeg" />
+    <source src="assets/music.wav" type="audio/wav" />
   </audio>
 
-  <!-- ===== MAIN PAGE ===== -->
-  <main class="main-wrap">
+  <!-- Master App Container (Single Page Flow) -->
+  <main id="scrapbook-app" class="scrapbook-container">
 
-    <!-- COUNTDOWN STATE -->
-    <div id="countdown-view" class="view">
-      <p class="pre-label">🌙 counting down to something magical</p>
-      <h1 class="hero-title">Something special is coming,<br><span class="name-rose" id="hero-name"></span>...</h1>
+    <!-- ========================================== -->
+    <!-- SCREEN 1: THE ENVELOPE                     -->
+    <!-- ========================================== -->
+    <section id="screen-1" class="screen screen-envelope active">
+      <div class="screen-content center-content">
 
-      <div class="clock-wrap glass-box">
-        <div class="clock-grid">
-          <div class="clock-unit">
-            <div class="clock-num" id="d-num">00</div>
-            <div class="clock-label">Days</div>
+        <!-- Cute Chat Bubble Sticker -->
+        <div class="sticker-bubble bounce-in">
+          <span class="bubble-tail"></span>
+          <p class="bubble-text">Happy Birthday, <span class="name-highlight">Chakshu</span>! ✨</p>
+        </div>
+
+        <!-- Script Romantic Subtitle -->
+        <h2 class="script-subtitle">love u forever</h2>
+
+        <!-- Envelope Interactive Stage -->
+        <div class="envelope-stage" id="envelope-stage" role="button" tabindex="0" aria-label="Tap to open birthday envelope">
+          
+          <!-- Halftone Hands holding envelope (Inline SVG) -->
+          <div class="hands-container" aria-hidden="true">
+            <!-- Left Hand -->
+            <svg class="halftone-hand hand-left" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10,210 C30,170 50,140 70,110 C80,95 90,80 105,70 C120,60 135,65 140,80 C145,95 130,115 115,130 C125,120 145,110 152,125 C158,140 135,155 120,165 C130,160 148,155 150,170 C152,185 130,195 110,205 C90,215 50,225 10,210 Z" fill="#222" opacity="0.88"/>
+              <ellipse cx="115" cy="85" rx="12" ry="7" fill="#fff" opacity="0.4"/>
+              <ellipse cx="125" cy="130" rx="14" ry="7" fill="#fff" opacity="0.4"/>
+              <ellipse cx="120" cy="170" rx="13" ry="6" fill="#fff" opacity="0.4"/>
+              <!-- Halftone Dots Texture -->
+              <pattern id="hand-dots-l" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+                <circle cx="4" cy="4" r="1.8" fill="#e8ded2" opacity="0.6"/>
+              </pattern>
+              <rect x="20" y="60" width="130" height="150" fill="url(#hand-dots-l)"/>
+            </svg>
+
+            <!-- Right Hand -->
+            <svg class="halftone-hand hand-right" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M150,210 C130,170 110,140 90,110 C80,95 70,80 55,70 C40,60 25,65 20,80 C15,95 30,115 45,130 C35,120 15,110 8,125 C2,140 25,155 40,165 C30,160 12,155 10,170 C8,185 30,195 50,205 C70,215 110,225 150,210 Z" fill="#222" opacity="0.88"/>
+              <ellipse cx="45" cy="85" rx="12" ry="7" fill="#fff" opacity="0.4"/>
+              <ellipse cx="35" cy="130" rx="14" ry="7" fill="#fff" opacity="0.4"/>
+              <ellipse cx="40" cy="170" rx="13" ry="6" fill="#fff" opacity="0.4"/>
+              <pattern id="hand-dots-r" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+                <circle cx="4" cy="4" r="1.8" fill="#e8ded2" opacity="0.6"/>
+              </pattern>
+              <rect x="10" y="60" width="130" height="150" fill="url(#hand-dots-r)"/>
+            </svg>
           </div>
-          <div class="clock-sep">:</div>
-          <div class="clock-unit">
-            <div class="clock-num" id="h-num">00</div>
-            <div class="clock-label">Hours</div>
+
+          <!-- The Cream Envelope -->
+          <div class="envelope-wrapper" id="envelope-wrapper">
+            <div class="envelope-pocket"></div>
+            
+            <!-- Letter Card peeking inside -->
+            <div class="envelope-letter-peek" id="envelope-letter-peek">
+              <span class="peek-line"></span>
+              <span class="peek-line short"></span>
+              <span class="peek-heart">❤️</span>
+            </div>
+
+            <!-- Envelope Flap (animates open) -->
+            <div class="envelope-flap" id="envelope-flap"></div>
+
+            <!-- Red Wax Seal with Heart -->
+            <div class="wax-seal" id="wax-seal">
+              <div class="wax-seal-inner">
+                <svg viewBox="0 0 40 40" class="wax-heart-svg">
+                  <path d="M20,32 C12,24 6,18 6,12 C6,7 10,3 15,3 C17.8,3 19.3,4.5 20,5.5 C20.7,4.5 22.2,3 25,3 C30,3 34,7 34,12 C34,18 28,24 20,32 Z" fill="#e5c158" opacity="0.85"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Lipstick Kiss Mark SVG -->
+            <div class="lipstick-kiss kiss-envelope">
+              <svg viewBox="0 0 60 40" class="kiss-svg">
+                <path d="M10,22 C12,14 18,10 24,14 C27,16 28,18 30,18 C32,18 33,16 36,14 C42,10 48,14 50,22 C46,24 38,25 30,25 C22,25 14,24 10,22 Z" fill="#b3122c" opacity="0.85"/>
+                <path d="M12,24 C18,34 26,36 30,36 C34,36 42,34 48,24 C40,27 30,27 12,24 Z" fill="#9e0c24" opacity="0.9"/>
+                <ellipse cx="30" cy="23" rx="10" ry="2.5" fill="#fcf8f0" opacity="0.45"/>
+              </svg>
+            </div>
+
+            <!-- Washi tape decoration -->
+            <div class="washi-tape washi-corner-tr"></div>
+            <div class="washi-tape washi-corner-bl"></div>
+
           </div>
-          <div class="clock-sep">:</div>
-          <div class="clock-unit">
-            <div class="clock-num" id="m-num">00</div>
-            <div class="clock-label">Minutes</div>
+
+          <!-- Floating Sparkles & Hearts Container -->
+          <div class="envelope-burst-container" id="envelope-burst"></div>
+
+        </div>
+
+        <!-- Handwritten Prompt Caption -->
+        <div class="handwritten-caption pulse-gentle">
+          <svg class="hand-doodle-arrow" viewBox="0 0 60 40" fill="none">
+            <path d="M10,32 C25,35 45,25 50,8 M50,8 L40,12 M50,8 L48,20" stroke="#f6ddcf" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          <span class="caption-text">tap the envelope</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 2: MEMORIES BOARD                   -->
+    <!-- ========================================== -->
+    <section id="screen-2" class="screen screen-gingham screen-memories">
+      <div class="screen-content board-content">
+
+        <!-- Big Pinned Off-White Paper Sheet -->
+        <div class="scrap-paper-sheet sheet-memories">
+          
+          <!-- Red Pushpin at Top Center -->
+          <div class="red-pushpin pin-top-center">
+            <div class="pushpin-head">
+              <span class="pin-shine"></span>
+            </div>
+            <div class="pushpin-shadow"></div>
           </div>
-          <div class="clock-sep">:</div>
-          <div class="clock-unit">
-            <div class="clock-num" id="s-num">00</div>
-            <div class="clock-label">Seconds</div>
+
+          <!-- Washi Tape Accents -->
+          <div class="washi-tape washi-sheet-tl"></div>
+          <div class="washi-tape washi-sheet-br"></div>
+
+          <!-- Header Title & Flowers -->
+          <div class="board-header">
+            <div class="pressed-flower flower-lily-sm">
+              <!-- SVG Lily -->
+              <svg viewBox="0 0 80 80" class="flower-svg">
+                <path d="M40,50 Q40,75 35,78" stroke="#5a7247" stroke-width="3" fill="none"/>
+                <path d="M40,50 Q30,60 20,55" stroke="#5a7247" stroke-width="2" fill="none"/>
+                <path d="M40,45 C25,35 15,15 40,5 C65,15 55,35 40,45 Z" fill="#fff5f5" stroke="#e8a598" stroke-width="1"/>
+                <path d="M40,45 C15,40 5,50 15,65 C30,65 38,55 40,45 Z" fill="#fde2e2" stroke="#e8a598" stroke-width="1"/>
+                <path d="M40,45 C65,40 75,50 65,65 C50,65 42,55 40,45 Z" fill="#fde2e2" stroke="#e8a598" stroke-width="1"/>
+                <circle cx="40" cy="42" r="3.5" fill="#e8927c"/>
+              </svg>
+            </div>
+            <h1 class="board-title">Moments of Us</h1>
+            <p class="board-subtitle">treasured forever in my heart</p>
+          </div>
+
+          <!-- Tilted Film Strip with 4 Photos -->
+          <div class="filmstrip-wrapper">
+            <div class="filmstrip">
+              <div class="film-border-holes top-holes">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              
+              <div class="film-frames-track">
+                <!-- Frame 1 -->
+                <div class="film-frame">
+                  <div class="film-meta">01 🎞️</div>
+                  <div class="photo-cropper">
+                    <img src="assets/photos/1.jpg" alt="Memory 1" class="scrap-photo photo-item-0" data-index="0" onerror="handlePhotoError(this, 'Our Beautiful Beginning')" />
+                  </div>
+                </div>
+
+                <!-- Frame 2 -->
+                <div class="film-frame">
+                  <div class="film-meta">02 🎞️</div>
+                  <div class="photo-cropper">
+                    <img src="assets/photos/2.jpg" alt="Memory 2" class="scrap-photo photo-item-1" data-index="1" onerror="handlePhotoError(this, 'That Smile of Yours')" />
+                  </div>
+                </div>
+
+                <!-- Frame 3 -->
+                <div class="film-frame">
+                  <div class="film-meta">03 🎞️</div>
+                  <div class="photo-cropper">
+                    <img src="assets/photos/3.jpg" alt="Memory 3" class="scrap-photo photo-item-2" data-index="2" onerror="handlePhotoError(this, 'Every Little Moment')" />
+                  </div>
+                </div>
+
+                <!-- Frame 4 -->
+                <div class="film-frame">
+                  <div class="film-meta">04 🎞️</div>
+                  <div class="photo-cropper">
+                    <img src="assets/photos/4.jpg" alt="Memory 4" class="scrap-photo photo-item-3" data-index="3" onerror="handlePhotoError(this, 'My Favourite View')" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="film-border-holes bottom-holes">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Spotify Style Music Card -->
+          <div class="music-card-spotify">
+            <div class="spotify-badge">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="#1db954">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M7 9c3-0.5 7-0.5 10 1M7.5 12c2.5-0.4 6-0.3 8.5 1M8 15c2-0.3 4.5-0.2 6.5 0.8" stroke="#000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+              </svg>
+              <span>OUR SPECIAL SONG</span>
+            </div>
+
+            <div class="music-card-body">
+              <!-- Vinyl Record (Tappable & Rotates) -->
+              <div class="vinyl-wrapper" id="memories-vinyl" role="button" tabindex="0" aria-label="Play our song">
+                <div class="vinyl-disc">
+                  <div class="vinyl-grooves-pattern"></div>
+                  <div class="vinyl-label">
+                    <div class="vinyl-heart-icon">❤️</div>
+                  </div>
+                  <div class="vinyl-play-indicator" id="vinyl-status-icon">▶</div>
+                </div>
+              </div>
+
+              <!-- Song Details -->
+              <div class="song-info">
+                <h3 class="song-title" id="song-title-display">Perfect</h3>
+                <p class="song-artist" id="song-artist-display">Ed Sheeran</p>
+                <div class="spotify-progress-wrap">
+                  <div class="spotify-progress-bar">
+                    <div class="spotify-progress-fill" id="spotify-progress-fill"></div>
+                  </div>
+                  <div class="spotify-time">
+                    <span id="time-current">0:00</span>
+                    <span id="time-total">3:40</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Handwritten sticker pointing to vinyl -->
+            <div class="vinyl-hint-sticker">
+              <svg class="curved-arrow-svg" viewBox="0 0 50 30" fill="none">
+                <path d="M45,25 C30,28 15,20 10,5 M10,5 L18,8 M10,5 L8,16" stroke="#b3122c" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span class="hint-text">tap the record to play our song 🎵</span>
+            </div>
+          </div>
+
+          <!-- Bottom Navigation Button -->
+          <div class="board-footer">
+            <button class="scrap-btn btn-next" data-next-screen="3">
+              <span>Next Chapter</span>
+              <span class="btn-arrow">➔</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 3: BIRTHDAY CALENDAR                -->
+    <!-- ========================================== -->
+    <section id="screen-3" class="screen screen-envelope screen-calendar">
+      <div class="screen-content calendar-stage">
+
+        <!-- Title Stamp -->
+        <div class="stamp-tag rotate-slight-left">
+          <span>THE DAY THE WORLD GOT BRIGHTER</span>
+        </div>
+
+        <div class="calendar-and-polaroid-wrap">
+
+          <!-- Vintage Calendar Page -->
+          <div class="calendar-sheet">
+            <div class="calendar-tape"></div>
+            
+            <div class="calendar-header-banner">
+              <span class="calendar-month">NOVEMBER</span>
+              <span class="calendar-year">2026</span>
+            </div>
+
+            <div class="calendar-days-row">
+              <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+            </div>
+
+            <div class="calendar-grid">
+              <!-- Calendar days 1 to 30 -->
+              <span class="cal-day">1</span>
+              <span class="cal-day">2</span>
+              <span class="cal-day">3</span>
+              <span class="cal-day">4</span>
+              <span class="cal-day">5</span>
+              <span class="cal-day">6</span>
+              <span class="cal-day">7</span>
+              <!-- DAY 8 (Circled) -->
+              <span class="cal-day cal-day-special" id="cal-day-8">
+                <span class="day-num">8</span>
+                <!-- Hand-drawn SVG marker circle -->
+                <svg class="marker-circle-svg" viewBox="0 0 60 60">
+                  <path class="marker-circle-path" id="marker-circle-path" d="M15,25 C14,10 40,8 48,20 C56,33 46,52 28,50 C12,48 5,30 20,18 C28,12 44,14 50,22" fill="none" stroke="#d61b36" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="cal-day">9</span>
+              <span class="cal-day">10</span>
+              <span class="cal-day">11</span>
+              <span class="cal-day">12</span>
+              <span class="cal-day">13</span>
+              <span class="cal-day">14</span>
+              <span class="cal-day">15</span>
+              <span class="cal-day">16</span>
+              <span class="cal-day">17</span>
+              <span class="cal-day">18</span>
+              <span class="cal-day">19</span>
+              <span class="cal-day">20</span>
+              <span class="cal-day">21</span>
+              <span class="cal-day">22</span>
+              <span class="cal-day">23</span>
+              <span class="cal-day">24</span>
+              <span class="cal-day">25</span>
+              <span class="cal-day">26</span>
+              <span class="cal-day">27</span>
+              <span class="cal-day">28</span>
+              <span class="cal-day">29</span>
+              <span class="cal-day">30</span>
+            </div>
+
+            <!-- Handwritten cute sticker note -->
+            <div class="calendar-sticker-note">
+              <span class="note-heart">💖</span>
+              <span class="note-text">it's your birthday!</span>
+            </div>
+
+            <!-- Pressed flower on calendar corner -->
+            <div class="pressed-flower flower-hibiscus-corner">
+              <!-- Inline SVG Hibiscus -->
+              <svg viewBox="0 0 100 100" class="flower-svg">
+                <g transform="translate(50,50)">
+                  <path d="M0,0 C-15,-35 -35,-25 -25,-5 C-20,5 -5,15 0,0" fill="#f8a5b5" stroke="#df6d85" stroke-width="1.2"/>
+                  <path d="M0,0 C15,-35 35,-25 25,-5 C20,5 5,15 0,0" fill="#faa9b9" stroke="#df6d85" stroke-width="1.2"/>
+                  <path d="M0,0 C35,-10 38,20 18,22 C8,22 2,10 0,0" fill="#f58ea3" stroke="#df6d85" stroke-width="1.2"/>
+                  <path d="M0,0 C10,35 -20,38 -20,18 C-20,8 -5,2 0,0" fill="#f89cb0" stroke="#df6d85" stroke-width="1.2"/>
+                  <path d="M0,0 C-35,10 -35,-15 -18,-18 C-8,-18 -2,-5 0,0" fill="#fbb0bf" stroke="#df6d85" stroke-width="1.2"/>
+                  <!-- Core ruby glow -->
+                  <circle cx="0" cy="0" r="8" fill="#b3122c"/>
+                  <!-- Stamen -->
+                  <path d="M0,0 Q12,-15 22,-22" stroke="#e5c158" stroke-width="2.5" fill="none"/>
+                  <circle cx="22" cy="-22" r="3" fill="#ffd700"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Big White Polaroid Frame with Photo 5 or Video -->
+          <div class="polaroid-card polaroid-bday">
+            <div class="polaroid-pin">
+              <div class="red-pushpin pin-polaroid">
+                <div class="pushpin-head"><span class="pin-shine"></span></div>
+                <div class="pushpin-shadow"></div>
+              </div>
+            </div>
+            
+            <div class="polaroid-photo-frame" id="bday-media-frame">
+              <img src="assets/photos/5.jpg" alt="Chakshu's Birthday" class="polaroid-img photo-item-4" data-index="4" id="bday-polaroid-img" onerror="handlePhotoError(this, 'Happy Birthday Chakshu')" />
+              <video src="assets/video.mp4" class="polaroid-video hidden" id="bday-polaroid-video" playsinline loop muted autoplay></video>
+            </div>
+
+            <p class="polaroid-caption script-caption">Happy Birthday</p>
+          </div>
+
+        </div>
+
+        <!-- Next Button -->
+        <div class="center-btn-row">
+          <button class="scrap-btn btn-next" data-next-screen="4">
+            <span>Read My Letter</span>
+            <span class="btn-arrow">➔</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 4: THE LETTER                       -->
+    <!-- ========================================== -->
+    <section id="screen-4" class="screen screen-gingham screen-letter">
+      <div class="screen-content letter-stage">
+
+        <!-- Unfolding Letter Paper -->
+        <div class="letter-paper-wrapper" id="letter-unfold-wrapper">
+          <div class="letter-paper torn-edge">
+            
+            <!-- Red Pushpin at Top -->
+            <div class="red-pushpin pin-letter">
+              <div class="pushpin-head"><span class="pin-shine"></span></div>
+              <div class="pushpin-shadow"></div>
+            </div>
+
+            <!-- Floral Accents -->
+            <div class="pressed-flower flower-orchid-top">
+              <svg viewBox="0 0 70 70" class="flower-svg">
+                <g transform="translate(35,35)">
+                  <path d="M0,0 C-10,-25 -25,-15 -15,-5 Z" fill="#fde2e4" stroke="#d48a94"/>
+                  <path d="M0,0 C10,-25 25,-15 15,-5 Z" fill="#fde2e4" stroke="#d48a94"/>
+                  <path d="M0,0 C-25,5 -20,20 -5,12 Z" fill="#fad2e1" stroke="#d48a94"/>
+                  <path d="M0,0 C25,5 20,20 5,12 Z" fill="#fad2e1" stroke="#d48a94"/>
+                  <ellipse cx="0" cy="5" rx="8" ry="12" fill="#c9184a"/>
+                  <circle cx="0" cy="2" r="3" fill="#ffeaa7"/>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Letter Body with Typewriter Text -->
+            <div class="letter-body">
+              <div id="typewriter-content" class="typewriter-text"></div>
+              <span class="typewriter-cursor" id="typewriter-cursor">|</span>
+            </div>
+
+            <!-- Signature in Romantic Script -->
+            <div class="letter-signature" id="letter-signature">
+              <p class="sig-yours">Yours always,</p>
+              <p class="sig-name" id="sig-name-display">Het</p>
+              
+              <!-- Lipstick Kiss Stamp on Letter -->
+              <div class="lipstick-kiss kiss-letter">
+                <svg viewBox="0 0 60 40" class="kiss-svg">
+                  <path d="M10,22 C12,14 18,10 24,14 C27,16 28,18 30,18 C32,18 33,16 36,14 C42,10 48,14 50,22 C46,24 38,25 30,25 C22,25 14,24 10,22 Z" fill="#b3122c" opacity="0.85"/>
+                  <path d="M12,24 C18,34 26,36 30,36 C34,36 42,34 48,24 C40,27 30,27 12,24 Z" fill="#9e0c24" opacity="0.9"/>
+                </svg>
+              </div>
+            </div>
+
           </div>
         </div>
-        <p id="subtitle" class="subtitle">The countdown has begun... 🌸</p>
-      </div>
-    </div>
 
-    <!-- BIRTHDAY STATE (shown at midnight) -->
-    <div id="bday-view" class="view hidden">
-      <h1 class="bday-heading" id="bday-heading"></h1>
-      <div class="message-box glass-box">
-        <p id="typewriter" class="typewriter"></p>
-        <p class="from-line">— with love 💖</p>
+        <!-- Continue Button -->
+        <div class="letter-footer">
+          <button class="scrap-btn btn-next" data-next-screen="5" id="btn-after-letter">
+            <span>Special Surprises</span>
+            <span class="btn-arrow">➔</span>
+          </button>
+        </div>
+
       </div>
-    </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 5: "PICK ONE, CHAKSHU"              -->
+    <!-- ========================================== -->
+    <section id="screen-5" class="screen screen-envelope screen-pick">
+      <div class="screen-content pick-content">
+
+        <!-- Big Script Title -->
+        <h1 class="pick-title script-title">Pick one, Chakshu</h1>
+        <p class="pick-subtitle">choose a little keepsake from my heart</p>
+
+        <!-- 3 Interactive Items Grid -->
+        <div class="pick-items-container">
+          
+          <!-- Item A: "open when you miss me" -->
+          <div class="pick-item-card card-envelope" id="pick-item-a" role="button" tabindex="0">
+            <div class="washi-tape washi-pick-1"></div>
+            <div class="pick-icon-stage">
+              <!-- Mini envelope icon -->
+              <div class="mini-envelope">
+                <div class="mini-env-pocket"></div>
+                <div class="mini-env-flap"></div>
+                <div class="mini-wax-seal">❤️</div>
+              </div>
+            </div>
+            <div class="pick-card-text">
+              <h3>Open When You Miss Me</h3>
+              <p>for when distance feels too far</p>
+            </div>
+            <span class="pick-status-badge" id="badge-a">Tap to open</span>
+          </div>
+
+          <!-- Item B: "pieces of our story" -->
+          <div class="pick-item-card card-film" id="pick-item-b" role="button" tabindex="0">
+            <div class="washi-tape washi-pick-2"></div>
+            <div class="pick-icon-stage">
+              <!-- Mini film strip icon -->
+              <div class="mini-film-roll">
+                <div class="mini-film-hole"></div>
+                <div class="mini-film-pic">📸</div>
+                <div class="mini-film-hole"></div>
+              </div>
+            </div>
+            <div class="pick-card-text">
+              <h3>Pieces of Our Story</h3>
+              <p>a scrapbook collage of us</p>
+            </div>
+            <span class="pick-status-badge" id="badge-b">Tap to view</span>
+          </div>
+
+          <!-- Item C: "your surprise" -->
+          <div class="pick-item-card card-gift" id="pick-item-c" role="button" tabindex="0">
+            <div class="washi-tape washi-pick-3"></div>
+            <div class="pick-icon-stage">
+              <!-- 3D Gift Box icon -->
+              <div class="gift-box-icon" id="gift-box-preview">
+                <div class="gift-box-lid">
+                  <div class="gift-ribbon-bow">🎀</div>
+                </div>
+                <div class="gift-box-body">
+                  <div class="gift-ribbon-vertical"></div>
+                </div>
+              </div>
+            </div>
+            <div class="pick-card-text">
+              <h3>Your Surprise</h3>
+              <p>unveil a hidden birthday secret</p>
+            </div>
+            <span class="pick-status-badge" id="badge-c">Tap to unwrap</span>
+          </div>
+
+        </div>
+
+        <!-- Hidden "One last thing..." button (reveals when all 3 opened) -->
+        <div class="one-last-thing-wrapper hidden" id="one-last-thing-wrap">
+          <button class="scrap-btn btn-glowing-pulse" id="btn-to-screen-6">
+            <span>One last thing... 💌</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- OVERLAYS / MODALS FOR SCREEN 5 SUB-SCREENS     -->
+      <!-- ============================================== -->
+
+      <!-- Subview A: Open when you miss me -->
+      <div class="subview-modal hidden" id="subview-miss-me">
+        <div class="subview-card torn-edge">
+          <button class="subview-back-btn" id="back-from-miss-me" aria-label="Close note">✕ Back</button>
+          
+          <div class="red-pushpin pin-subview">
+            <div class="pushpin-head"><span class="pin-shine"></span></div>
+          </div>
+          
+          <div class="pressed-flower flower-hibiscus-sm">
+            <svg viewBox="0 0 60 60" class="flower-svg">
+              <circle cx="30" cy="30" r="15" fill="#f8a5b5"/>
+              <circle cx="30" cy="30" r="6" fill="#c9184a"/>
+            </svg>
+          </div>
+
+          <h2 class="subview-title script-title">Open When You Miss Me</h2>
+          
+          <div class="subview-message-box">
+            <p id="msg-miss-me-text" class="handwritten-body">
+              "Whenever you miss me, just remember that even when I'm far away, I'm only one call away. You are my sweetest memory and my favourite habit. 💕"
+            </p>
+          </div>
+
+          <div class="lipstick-kiss kiss-subview">
+            <svg viewBox="0 0 60 40" class="kiss-svg">
+              <path d="M10,22 C12,14 18,10 24,14 C27,16 28,18 30,18 C32,18 33,16 36,14 C42,10 48,14 50,22 C46,24 38,25 30,25 C22,25 14,24 10,22 Z" fill="#b3122c" opacity="0.9"/>
+              <path d="M12,24 C18,34 26,36 30,36 C34,36 42,34 48,24 C40,27 30,27 12,24 Z" fill="#9e0c24" opacity="0.9"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subview B: Pieces of our story (Polaroid collage + Zoom + Swipe) -->
+      <div class="subview-modal hidden" id="subview-pieces">
+        <div class="subview-pieces-content">
+          <div class="pieces-nav-header">
+            <button class="subview-back-btn" id="back-from-pieces" aria-label="Back to pick screen">✕ Back</button>
+            <h2 class="pieces-title" id="pieces-caption-header">A few little moments from our story</h2>
+          </div>
+
+          <!-- Polaroid Grid / Carousel (tap to zoom, swipeable) -->
+          <div class="polaroid-scrap-wall" id="polaroids-wall">
+            <!-- 6 polaroids dynamically populated or template -->
+            <div class="polaroid-tile rotate-p1" data-pindex="0">
+              <div class="washi-tape washi-mini"></div>
+              <div class="polaroid-tile-imgwrap">
+                <img src="assets/photos/1.jpg" alt="Photo 1" class="photo-item-0" data-index="0" onerror="handlePhotoError(this, 'Moment 1')" />
+              </div>
+              <span class="polaroid-tile-label">Our beginning ❤️</span>
+            </div>
+
+            <div class="polaroid-tile rotate-p2" data-pindex="1">
+              <div class="washi-tape washi-mini"></div>
+              <div class="polaroid-tile-imgwrap">
+                <img src="assets/photos/2.jpg" alt="Photo 2" class="photo-item-1" data-index="1" onerror="handlePhotoError(this, 'Moment 2')" />
+              </div>
+              <span class="polaroid-tile-label">That smile ✨</span>
+            </div>
+
+            <div class="polaroid-tile rotate-p3" data-pindex="2">
+              <div class="washi-tape washi-mini"></div>
+              <div class="polaroid-tile-imgwrap">
+                <img src="assets/photos/3.jpg" alt="Photo 3" class="photo-item-2" data-index="2" onerror="handlePhotoError(this, 'Moment 3')" />
+              </div>
+              <span class="polaroid-tile-label">Endless laughs 🌸</span>
+            </div>
+
+            <div class="polaroid-tile rotate-p4" data-pindex="3">
+              <div class="washi-tape washi-mini"></div>
+              <div class="polaroid-tile-imgwrap">
+                <img src="assets/photos/4.jpg" alt="Photo 4" class="photo-item-3" data-index="3" onerror="handlePhotoError(this, 'Moment 4')" />
+              </div>
+              <span class="polaroid-tile-label">Sweetest warmth ☕</span>
+            </div>
+
+            <div class="polaroid-tile rotate-p5" data-pindex="4">
+              <div class="washi-tape washi-mini"></div>
+              <div class="polaroid-tile-imgwrap">
+                <img src="assets/photos/5.jpg" alt="Photo 5" class="photo-item-4" data-index="4" onerror="handlePhotoError(this, 'Moment 5')" />
+              </div>
+              <span class="polaroid-tile-label">Your special day 🎂</span>
+            </div>
+
+            <div class="polaroid-tile rotate-p6" data-pindex="5">
+              <div class="washi-tape washi-mini"></div>
+              <div class="polaroid-tile-imgwrap">
+                <img src="assets/photos/6.jpg" alt="Photo 6" class="photo-item-5" data-index="5" onerror="handlePhotoError(this, 'Moment 6')" />
+              </div>
+              <span class="polaroid-tile-label">Forever us 💕</span>
+            </div>
+          </div>
+
+          <p class="zoom-instruction-hint">💡 Tap any photo to zoom in & browse</p>
+        </div>
+      </div>
+
+      <!-- Subview C: Gift box modal (shakes, opens with confetti burst, reveals message) -->
+      <div class="subview-modal hidden" id="subview-gift">
+        <div class="subview-card subview-gift-card torn-edge">
+          <button class="subview-back-btn" id="back-from-gift" aria-label="Close surprise">✕ Back</button>
+
+          <h2 class="subview-title script-title">A Birthday Surprise!</h2>
+
+          <!-- Interactive 3D Gift Box Stage -->
+          <div class="interactive-gift-stage" id="interactive-gift-stage">
+            <div class="large-gift-box shake-animation" id="large-gift-box">
+              <div class="large-gift-lid" id="large-gift-lid">
+                <div class="large-gift-bow">🎀</div>
+              </div>
+              <div class="large-gift-body">
+                <div class="large-gift-ribbon-v"></div>
+                <div class="large-gift-ribbon-h"></div>
+              </div>
+            </div>
+            <p class="gift-tap-hint" id="gift-tap-hint">Tap the box to open! 🎁</p>
+          </div>
+
+          <!-- Secret Message Revealed (Hidden until tap) -->
+          <div class="gift-revealed-content hidden" id="gift-revealed-content">
+            <div class="confetti-cannon-burst" id="gift-confetti-cannon"></div>
+            <div class="gift-scroll-note">
+              <p id="msg-surprise-text" class="typewriter-body">
+                "Surprise! The biggest gift you got is me (just kidding 😜). The real gift is that I'll always be with you. Happy Birthday, Chakshu! 🎁❤️"
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 6: THE QUESTION (YES / NO CARD)     -->
+    <!-- ========================================== -->
+    <section id="screen-6" class="screen screen-envelope screen-question">
+      <div class="screen-content question-stage">
+
+        <!-- Question Card Box -->
+        <div class="question-paper-card torn-edge" id="question-card">
+          
+          <div class="red-pushpin pin-question">
+            <div class="pushpin-head"><span class="pin-shine"></span></div>
+          </div>
+
+          <div class="washi-tape washi-question-tl"></div>
+          <div class="washi-tape washi-question-br"></div>
+
+          <!-- The Big Question Header -->
+          <div class="question-header">
+            <div class="pressed-flower flower-lily-question">
+              <svg viewBox="0 0 60 60" class="flower-svg">
+                <path d="M30,30 C20,15 10,25 30,5 C50,25 40,15 30,30 Z" fill="#ffe3e3"/>
+                <circle cx="30" cy="30" r="4" fill="#d61b36"/>
+              </svg>
+            </div>
+            <h1 class="question-heading" id="question-text">Chakshu, will you be mine forever?</h1>
+            <p class="question-subtext">please tick the only right answer... 💍</p>
+          </div>
+
+          <!-- Interactive Choices: YES / NO -->
+          <div class="choices-container" id="choices-container">
+            
+            <!-- Option YES -->
+            <button class="choice-btn choice-yes" id="btn-choice-yes">
+              <span class="custom-checkbox box-yes">✓</span>
+              <span class="choice-label">YES!</span>
+            </button>
+
+            <!-- Option NO (Runs Away from finger/pointer!) -->
+            <button class="choice-btn choice-no" id="btn-choice-no">
+              <span class="custom-checkbox box-no">✗</span>
+              <span class="choice-label">NO</span>
+            </button>
+
+          </div>
+
+          <!-- Wrong-button warning sticker (shows if she catches NO) -->
+          <div class="wrong-button-sticker hidden" id="wrong-button-sticker">
+            <div class="wrong-sticker-tape"></div>
+            <p id="wrong-button-msg">Oops, you pressed the wrong button! You're cute, try again 😄</p>
+          </div>
+
+        </div>
+
+        <!-- Celebration Container (Appears on YES) -->
+        <div class="celebration-container hidden" id="celebration-container">
+          <div class="celebration-polaroid-frame">
+            
+            <!-- Floral Garland around Polaroid -->
+            <div class="polaroid-garland garland-top">
+              <span class="garland-flower">🌸</span>
+              <span class="garland-flower">🌺</span>
+              <span class="garland-flower">🌷</span>
+              <span class="garland-flower">🌹</span>
+              <span class="garland-flower">🌸</span>
+            </div>
+
+            <!-- Final Photo of Us (#6) -->
+            <div class="celebration-photo-wrap">
+              <img src="assets/photos/6.jpg" alt="Us Together Forever" class="polaroid-img photo-item-5" data-index="5" id="final-yes-photo" onerror="handlePhotoError(this, 'Chakshu & Forever Us')" />
+            </div>
+
+            <!-- Heartwarming Final Message -->
+            <div class="celebration-text-box">
+              <p class="celebration-main-text" id="final-yes-text">
+                I knew you'd say yes! I love you, Chakshu. Happy Birthday, my love! 🎂❤️
+              </p>
+            </div>
+
+            <div class="polaroid-garland garland-bottom">
+              <span class="garland-flower">💕</span>
+              <span class="garland-flower">✨</span>
+              <span class="garland-flower">💐</span>
+              <span class="garland-flower">✨</span>
+              <span class="garland-flower">💕</span>
+            </div>
+          </div>
+
+          <!-- Replay Button -->
+          <div class="replay-btn-wrapper">
+            <button class="scrap-btn btn-replay" id="btn-replay">
+              <span>Replay Our Story ↺</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
 
   </main>
+
+  <!-- ============================================== -->
+  <!-- LIGHTBOX MODAL FOR PHOTO BROWSING / ZOOM       -->
+  <!-- ============================================== -->
+  <div class="lightbox-modal hidden" id="lightbox-modal">
+    <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+    <div class="lightbox-frame">
+      <button class="lightbox-close" id="lightbox-close" aria-label="Close image">✕</button>
+      <div class="lightbox-img-wrap">
+        <img src="" alt="Enlarged Memory" id="lightbox-img" class="lightbox-img" />
+      </div>
+      <p class="lightbox-caption" id="lightbox-caption"></p>
+      
+      <!-- Prev / Next Controls -->
+      <div class="lightbox-controls">
+        <button class="lightbox-arrow lb-prev" id="lb-prev" aria-label="Previous photo">❮</button>
+        <button class="lightbox-arrow lb-next" id="lb-next" aria-label="Next photo">❯</button>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

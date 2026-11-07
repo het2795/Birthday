@@ -1,450 +1,927 @@
-// ============================================================
-//  CONFIG — easy to edit
-// ============================================================
+/**
+ * ====================================================================
+ * SCRAPBOOK LOVE LETTER BIRTHDAY - JAVASCRIPT
+ * Romantic interactive website handcrafted for CHAKSHU ❤️
+ * ====================================================================
+ */
+
+// ====================================================================
+// 1. CONFIGURATION (EDIT EVERYTHING HERE)
+// ====================================================================
 const CONFIG = {
-  name: "Chakshu",
-  // Target: 8 November 2026 at midnight IST (00:00:00)
-  birthday: "2026-11-08T00:00:00+05:30",
-  fromName: "Someone who cares 💖",
-  message: [
-    "I couldn't wait until tomorrow, so I'm wishing you early.",
-    "Happy Birthday in advance, Chakshu! You make every day brighter,",
-    "and tomorrow I'm going to make sure you feel as special as you are. 🎂✨"
+  // Personalization
+  girlfriendName: "Chakshu",
+  myName: "Het",
+  birthdayDate: "8 November",
+
+  // Music configuration
+  song: {
+    title: "Perfect",
+    artist: "Ed Sheeran",
+    src: "assets/music.mp3"
+  },
+
+  // Photos & orientation configs (rotate: 0, 90, 180, 270, scale: 1.0 - 2.0)
+  // Black bars are cropped with CSS object-fit: cover and optional scale
+  photos: [
+    { url: "assets/photos/1.jpg", rotate: 0, scale: 1, caption: "Our beginning ❤️" },
+    { url: "assets/photos/2.jpg", rotate: 0, scale: 1, caption: "That beautiful smile ✨" },
+    { url: "assets/photos/3.jpg", rotate: 0, scale: 1, caption: "Every moment with you 🌸" },
+    { url: "assets/photos/4.jpg", rotate: 0, scale: 1, caption: "My favourite view ☕" },
+    { url: "assets/photos/5.jpg", rotate: 0, scale: 1.55, caption: "Happy Birthday Chakshu 🎂" },
+    { url: "assets/photos/6.jpg", rotate: 0, scale: 1, caption: "Us together forever 💕" }
   ],
-  // Set TEST_MODE to true to preview the birthday screen immediately without waiting!
-  TEST_MODE: false
+
+  // Optional video for Screen 3 (Birthday polaroid)
+  video: {
+    src: "assets/video.mp4",
+    rotate: 0,
+    enabled: false // set to true if assets/video.mp4 exists
+  },
+
+  // All messages (exact texts requested)
+  messages: {
+    letter: `My dearest Chakshu,
+
+Happy Birthday, my love! Today is all about you, and I know that someone as special as you deserves a day that is just as special.
+
+Ever since you came into my life, everything feels a little more beautiful. Your smile, your words, your little habits, they are all my favourite things.
+
+I promise to always be by your side, in every happiness and every hardship. Just keep smiling like this.
+
+Love you forever and always. ❤️`,
+
+    missMe: "Whenever you miss me, just remember that even when I'm far away, I'm only one call away. You are my sweetest memory and my favourite habit. 💕",
+
+    surprise: "Surprise! The biggest gift you got is me (just kidding 😜). The real gift is that I'll always be with you. Happy Birthday, Chakshu! 🎁❤️",
+
+    piecesCaption: "A few little moments from our story",
+
+    question: "Chakshu, will you be mine forever?",
+
+    wrongButton: "Oops, you pressed the wrong button! You're cute, try again 😄",
+
+    finalYes: "I knew you'd say yes! I love you, Chakshu. Happy Birthday, my love! 🎂❤️"
+  },
+
+  // TEST MODE:
+  // 0 = normal flow (starts at Screen 1)
+  // 1, 2, 3, 4, 5, 6 = jump directly to screen 1..6 for testing
+  TEST_MODE: 0
 };
 
-// ============================================================
-//  GLOBALS
-// ============================================================
-let confettiParticles = [];
-let fireworkParticles = [];
-let countdownInterval = null;
-let typewriterDone = false;
-let prevValues = { d: -1, h: -1, m: -1, s: -1 };
 
-// Canvas references
-let confettiCanvas, confettiCtx;
+// ====================================================================
+// 2. GLOBAL STATE
+// ====================================================================
+let currentScreen = 1;
+let isMusicPlaying = false;
+let typewriterTimeout = null;
+let typewriterFinished = false;
+let openedPickItems = new Set();
+let lightboxIndex = 0;
+let audioContext = null;
+let synthOscillators = [];
+let synthInterval = null;
 
-// Balloon color palettes
-const BALLOON_COLORS = [
-  ['#ff6b9d', '#c44569'], // Rose pink
-  ['#a29bfe', '#6c5ce7'], // Lavender purple
-  ['#fd79a8', '#e84393'], // Hot pink
-  ['#fdcb6e', '#e17055'], // Peach orange
-  ['#55efc4', '#00b894'], // Mint
-  ['#74b9ff', '#0984e3'], // Sky blue
-  ['#ffeaa7', '#fdcb6e'], // Soft gold
-  ['#ff7675', '#d63031'], // Coral red
-  ['#e056fd', '#be2edd'], // Magenta
-  ['#f8a5c2', '#f78fb3']  // Pastel rose
-];
 
-const CONFETTI_COLORS = [
-  '#ff6b9d', '#a29bfe', '#ffd700', '#55efc4',
-  '#74b9ff', '#ff7675', '#ffeaa7', '#fd79a8',
-  '#e056fd', '#ffffff'
-];
+// ====================================================================
+// 3. INITIALIZATION ON DOM READY
+// ====================================================================
+document.addEventListener("DOMContentLoaded", () => {
+  setupCanvas();
+  applyConfigToDOM();
+  setupEventListeners();
+  setupAudio();
+  applyPhotoOrientations();
 
-// ============================================================
-//  INIT
-// ============================================================
-document.addEventListener('DOMContentLoaded', init);
-
-function init() {
-  // Set name in heading
-  const heroNameEl = document.getElementById('hero-name');
-  if (heroNameEl) heroNameEl.textContent = CONFIG.name;
-
-  const fromLineEl = document.querySelector('.from-line');
-  if (fromLineEl) fromLineEl.textContent = `— with love, ${CONFIG.fromName}`;
-
-  // Canvas setup
-  confettiCanvas = document.getElementById('confetti-canvas');
-  if (confettiCanvas) {
-    confettiCtx = confettiCanvas.getContext('2d');
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    requestAnimationFrame(confettiLoop);
-  }
-
-  // CONTINUOUS BALLOONS: never stop coming!
-  startContinuousBalloons();
-
-  // Music setup
-  setupMusic();
-
-  // Check if test mode or already birthday
-  if (CONFIG.TEST_MODE || isBirthdayReached()) {
-    showBirthdayScreen();
+  // Handle TEST_MODE
+  if (CONFIG.TEST_MODE >= 1 && CONFIG.TEST_MODE <= 6) {
+    goToScreen(CONFIG.TEST_MODE);
   } else {
-    startCountdown();
+    goToScreen(1);
+  }
+});
+
+
+// ====================================================================
+// 4. APPLY CONFIG DATA TO DOM
+// ====================================================================
+function applyConfigToDOM() {
+  // Personal names
+  const nameHighlights = document.querySelectorAll(".name-highlight");
+  nameHighlights.forEach(el => el.textContent = CONFIG.girlfriendName);
+
+  const sigNameDisplay = document.getElementById("sig-name-display");
+  if (sigNameDisplay) sigNameDisplay.textContent = CONFIG.myName;
+
+  // Music titles
+  const songTitleEl = document.getElementById("song-title-display");
+  const songArtistEl = document.getElementById("song-artist-display");
+  if (songTitleEl) songTitleEl.textContent = CONFIG.song.title;
+  if (songArtistEl) songArtistEl.textContent = CONFIG.song.artist;
+
+  // Texts
+  const msgMissMe = document.getElementById("msg-miss-me-text");
+  if (msgMissMe) msgMissMe.textContent = `"${CONFIG.messages.missMe}"`;
+
+  const msgSurprise = document.getElementById("msg-surprise-text");
+  if (msgSurprise) msgSurprise.textContent = `"${CONFIG.messages.surprise}"`;
+
+  const piecesCaption = document.getElementById("pieces-caption-header");
+  if (piecesCaption) piecesCaption.textContent = CONFIG.messages.piecesCaption;
+
+  const questionText = document.getElementById("question-text");
+  if (questionText) questionText.textContent = CONFIG.messages.question;
+
+  const wrongBtnMsg = document.getElementById("wrong-button-msg");
+  if (wrongBtnMsg) wrongBtnMsg.textContent = CONFIG.messages.wrongButton;
+
+  const finalYesText = document.getElementById("final-yes-text");
+  if (finalYesText) finalYesText.textContent = CONFIG.messages.finalYes;
+
+  // Video check for screen 3
+  if (CONFIG.video && CONFIG.video.enabled) {
+    const v = document.getElementById("bday-polaroid-video");
+    const img = document.getElementById("bday-polaroid-img");
+    if (v && img) {
+      v.src = CONFIG.video.src;
+      v.classList.remove("hidden");
+      img.classList.add("hidden");
+      if (CONFIG.video.rotate) {
+        v.style.transform = `rotate(${CONFIG.video.rotate}deg)`;
+      }
+    }
   }
 }
 
-function resizeCanvas() {
-  if (!confettiCanvas) return;
-  confettiCanvas.width = window.innerWidth;
-  confettiCanvas.height = window.innerHeight;
+// Apply rotation and scale configs per photo
+function applyPhotoOrientations() {
+  CONFIG.photos.forEach((photo, idx) => {
+    const rot = photo.rotate || 0;
+    const scale = photo.scale || 1;
+    const items = document.querySelectorAll(`.photo-item-${idx}`);
+    items.forEach(el => {
+      el.style.transform = `rotate(${rot}deg) scale(${scale})`;
+      el.style.objectFit = 'cover';
+    });
+  });
 }
 
-function isBirthdayReached() {
-  const target = new Date(CONFIG.birthday).getTime();
-  return Date.now() >= target;
-}
-
-// ============================================================
-//  CONTINUOUS BALLOONS (Never stop coming!)
-// ============================================================
-function startContinuousBalloons() {
-  // Initial wave: launch 8 balloons with staggered delays
-  for (let i = 0; i < 8; i++) {
-    setTimeout(spawnSingleBalloon, i * 350);
-  }
-
-  // Continuous stream: continuously spawn a new balloon every 500-800ms
-  function scheduleNextBalloon() {
-    spawnSingleBalloon();
-    const nextDelay = 450 + Math.random() * 450; // 450ms - 900ms
-    setTimeout(scheduleNextBalloon, nextDelay);
-  }
-
-  setTimeout(scheduleNextBalloon, 1200);
-}
-
-function spawnSingleBalloon() {
-  const container = document.getElementById('balloon-container');
+// Graceful fallback for missing photos
+window.handlePhotoError = function(imgElement, caption) {
+  const container = imgElement.parentElement;
   if (!container) return;
 
-  const balloon = document.createElement('div');
-  balloon.className = 'balloon';
+  const placeholderSvg = `
+    <div class="photo-placeholder-box">
+      <div class="ph-icon">📷🌸</div>
+      <div class="ph-title">${caption || 'Our Precious Memory'}</div>
+    </div>
+  `;
+  container.innerHTML = placeholderSvg;
+};
 
-  const palette  = BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)];
-  const size     = 45 + Math.random() * 55;        // 45px - 100px
-  const leftPos  = 4 + Math.random() * 92;         // 4vw - 96vw
-  const duration = 5.5 + Math.random() * 4.5;      // 5.5s - 10s
-  const sway     = 18 + Math.random() * 35;        // 18px - 53px
-  const opacity  = 0.85 + Math.random() * 0.15;
 
-  balloon.style.left = `${leftPos}vw`;
-  balloon.style.width = `${size}px`;
-  balloon.style.height = `${size * 1.25}px`;
-  balloon.style.background = `radial-gradient(circle at 35% 35%, ${palette[0]}, ${palette[1]})`;
-  balloon.style.opacity = opacity;
-  balloon.style.setProperty('--sw', `${sway}px`);
-  balloon.style.animation = `balloon-up ${duration}s ease-in forwards`;
+// ====================================================================
+// 5. SCREEN TRANSITIONS
+// ====================================================================
+function goToScreen(screenNum) {
+  const screens = document.querySelectorAll(".screen");
+  screens.forEach(s => s.classList.remove("active"));
 
-  // String under balloon
-  const string = document.createElement('div');
-  string.className = 'balloon-string';
-  balloon.appendChild(string);
+  const targetScreen = document.getElementById(`screen-${screenNum}`);
+  if (targetScreen) {
+    targetScreen.classList.add("active");
+    currentScreen = screenNum;
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
-  container.appendChild(balloon);
-
-  // Remove balloon from DOM once it has floated off the top
-  setTimeout(() => {
-    if (balloon.parentNode) {
-      balloon.remove();
+    // Screen specific triggers
+    if (screenNum === 3) {
+      triggerCalendarAnimation();
+    } else if (screenNum === 4) {
+      triggerTypewriterLetter();
     }
-  }, (duration + 1) * 1000);
-}
-
-// ============================================================
-//  COUNTDOWN
-// ============================================================
-function startCountdown() {
-  updateCountdown();
-  countdownInterval = setInterval(updateCountdown, 1000);
-}
-
-function updateCountdown() {
-  const target = new Date(CONFIG.birthday).getTime();
-  const now    = Date.now();
-  const diff   = target - now;
-
-  if (diff <= 0) {
-    clearInterval(countdownInterval);
-    showBirthdayScreen();
-    return;
-  }
-
-  const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-  updateDigit('d-num', days, prevValues.d);
-  updateDigit('h-num', hours, prevValues.h);
-  updateDigit('m-num', minutes, prevValues.m);
-  updateDigit('s-num', seconds, prevValues.s);
-
-  prevValues = { d: days, h: hours, m: minutes, s: seconds };
-
-  // Dynamic romantic subtitle
-  updateSubtitle(days, hours, minutes, seconds);
-}
-
-function pad(n) {
-  return String(n).padStart(2, '0');
-}
-
-function updateDigit(id, value, prevVal) {
-  const el = document.getElementById(id);
-  if (!el) return;
-
-  const formatted = pad(value);
-  if (formatted !== el.textContent) {
-    el.textContent = formatted;
-    // Trigger smooth bounce tick animation
-    el.classList.remove('tick');
-    void el.offsetWidth; // force reflow
-    el.classList.add('tick');
   }
 }
 
-function updateSubtitle(days, hours, minutes, seconds) {
-  const sub = document.getElementById('subtitle');
-  if (!sub) return;
 
-  if (days > 1) {
-    sub.textContent = `Just ${days} days until your magical day 🌸`;
-  } else if (days === 1) {
-    sub.textContent = 'Tomorrow is your special day! Almost there... 💫';
-  } else if (hours > 1) {
-    sub.textContent = `Just ${hours} hours to go... can you feel the magic? 💖`;
-  } else if (hours === 1) {
-    sub.textContent = 'Only 1 hour left until midnight! 🌹';
-  } else if (minutes > 10) {
-    sub.textContent = `Final ${minutes} minutes! The countdown is almost over... ✨`;
-  } else if (minutes > 1) {
-    sub.textContent = `Just ${minutes} minutes left! So excited! 💕`;
-  } else if (minutes === 1) {
-    sub.textContent = 'Less than a minute! Get ready! 🎂';
-  } else {
-    sub.textContent = `🎉 Final ${seconds} seconds!! 🎉`;
-  }
-}
-
-// ============================================================
-//  BIRTHDAY SCREEN (Revealed at 00:00:00)
-// ============================================================
-function showBirthdayScreen() {
-  const countdownView = document.getElementById('countdown-view');
-  const bdayView      = document.getElementById('bday-view');
-
-  if (countdownView) countdownView.classList.add('hidden');
-  if (bdayView)      bdayView.classList.remove('hidden');
-
-  // Staggered letters for "Happy Birthday Chakshu! 🎂"
-  animateHeading(`Happy Birthday ${CONFIG.name}! 🎂`);
-
-  // Extra celebration balloon burst
-  for (let i = 0; i < 20; i++) {
-    setTimeout(spawnSingleBalloon, i * 120);
-  }
-
-  // Firework burst celebration
-  fireCelebrationShow();
-
-  // Start typewriter message after heading settles
-  setTimeout(startTypewriter, 1400);
-}
-
-function animateHeading(text) {
-  const headingEl = document.getElementById('bday-heading');
-  if (!headingEl) return;
-
-  headingEl.innerHTML = '';
-  [...text].forEach((char, i) => {
-    const span = document.createElement('span');
-    span.textContent = char === ' ' ? '\u00A0' : char;
-    span.className = 'bday-letter';
-    span.style.animationDelay = `${i * 0.06}s`;
-    headingEl.appendChild(span);
+// ====================================================================
+// 6. EVENT LISTENERS
+// ====================================================================
+function setupEventListeners() {
+  // Navigation Next buttons
+  const nextBtns = document.querySelectorAll("[data-next-screen]");
+  nextBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const nextNum = parseInt(btn.getAttribute("data-next-screen"), 10);
+      goToScreen(nextNum);
+    });
   });
-}
 
-function fireCelebrationShow() {
-  // Initial big confetti bursts
-  burstConfetti(250, window.innerWidth / 2, window.innerHeight * 0.4);
-  burstConfetti(150, window.innerWidth * 0.2, window.innerHeight * 0.5);
-  burstConfetti(150, window.innerWidth * 0.8, window.innerHeight * 0.5);
+  // SCREEN 1: Envelope Tap
+  const envelopeStage = document.getElementById("envelope-stage");
+  if (envelopeStage) {
+    envelopeStage.addEventListener("click", handleEnvelopeOpen);
+    envelopeStage.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") handleEnvelopeOpen();
+    });
+  }
 
-  // Fireworks interval
-  let count = 0;
-  const fwInterval = setInterval(() => {
-    const x = window.innerWidth * (0.15 + Math.random() * 0.7);
-    const y = window.innerHeight * (0.15 + Math.random() * 0.45);
-    launchFirework(x, y);
-    count++;
-    if (count > 25) clearInterval(fwInterval);
-  }, 400);
-}
+  // Global Music Toggle Button
+  const musicToggle = document.getElementById("global-music-toggle");
+  if (musicToggle) {
+    musicToggle.addEventListener("click", toggleMusic);
+  }
 
-// ============================================================
-//  TYPEWRITER
-// ============================================================
-function startTypewriter() {
-  if (typewriterDone) return;
-  typewriterDone = true;
+  // Screen 2: Vinyl record tap
+  const vinylBtn = document.getElementById("memories-vinyl");
+  if (vinylBtn) {
+    vinylBtn.addEventListener("click", toggleMusic);
+  }
 
-  const el = document.getElementById('typewriter');
-  if (!el) return;
-
-  const fullText = CONFIG.message.join('\n\n');
-  let idx = 0;
-
-  function typeNext() {
-    if (idx < fullText.length) {
-      if (fullText[idx] === '\n') {
-        el.innerHTML += '<br/>';
-      } else {
-        const char = fullText[idx];
-        if (char === '<') el.innerHTML += '&lt;';
-        else if (char === '>') el.innerHTML += '&gt;';
-        else if (char === '&') el.innerHTML += '&amp;';
-        else el.innerHTML += char;
+  // Screen 4: Tap letter to complete typewriter immediately
+  const letterWrapper = document.getElementById("letter-unfold-wrapper");
+  if (letterWrapper) {
+    letterWrapper.addEventListener("click", () => {
+      if (!typewriterFinished) {
+        completeTypewriterInstantly();
       }
-      idx++;
-      setTimeout(typeNext, 35 + Math.random() * 25);
+    });
+  }
+
+  // Screen 5: Pick items taps
+  const pickA = document.getElementById("pick-item-a");
+  const pickB = document.getElementById("pick-item-b");
+  const pickC = document.getElementById("pick-item-c");
+
+  if (pickA) pickA.addEventListener("click", () => openSubview("subview-miss-me", "a"));
+  if (pickB) pickB.addEventListener("click", () => openSubview("subview-pieces", "b"));
+  if (pickC) pickC.addEventListener("click", () => openSubview("subview-gift", "c"));
+
+  // Screen 5: Subview Back buttons
+  const backA = document.getElementById("back-from-miss-me");
+  const backB = document.getElementById("back-from-pieces");
+  const backC = document.getElementById("back-from-gift");
+
+  if (backA) backA.addEventListener("click", () => closeSubview("subview-miss-me"));
+  if (backB) backB.addEventListener("click", () => closeSubview("subview-pieces"));
+  if (backC) backC.addEventListener("click", () => closeSubview("subview-gift"));
+
+  // Screen 5: Interactive Gift Box
+  const giftBoxStage = document.getElementById("interactive-gift-stage");
+  if (giftBoxStage) {
+    giftBoxStage.addEventListener("click", handleGiftBoxOpen);
+  }
+
+  // Screen 5: Button to Screen 6
+  const btnToScreen6 = document.getElementById("btn-to-screen-6");
+  if (btnToScreen6) {
+    btnToScreen6.addEventListener("click", () => goToScreen(6));
+  }
+
+  // Screen 5: Polaroid Collage Tiles click -> Open Lightbox
+  const polaroidTiles = document.querySelectorAll(".polaroid-tile");
+  polaroidTiles.forEach(tile => {
+    tile.addEventListener("click", () => {
+      const pIdx = parseInt(tile.getAttribute("data-pindex"), 10) || 0;
+      openLightbox(pIdx);
+    });
+  });
+
+  // Lightbox Modal Controls
+  const lbClose = document.getElementById("lightbox-close");
+  const lbBackdrop = document.getElementById("lightbox-backdrop");
+  const lbPrev = document.getElementById("lb-prev");
+  const lbNext = document.getElementById("lb-next");
+
+  if (lbClose) lbClose.addEventListener("click", closeLightbox);
+  if (lbBackdrop) lbBackdrop.addEventListener("click", closeLightbox);
+  if (lbPrev) lbPrev.addEventListener("click", () => navigateLightbox(-1));
+  if (lbNext) lbNext.addEventListener("click", () => navigateLightbox(1));
+
+  // SCREEN 6: Runaway NO Button & YES Button
+  setupQuestionCard();
+
+  // SCREEN 6: Replay Button
+  const btnReplay = document.getElementById("btn-replay");
+  if (btnReplay) {
+    btnReplay.addEventListener("click", resetStory);
+  }
+}
+
+
+// ====================================================================
+// 7. SCREEN 1: ENVELOPE OPENING ANIMATION
+// ====================================================================
+function handleEnvelopeOpen() {
+  const envWrapper = document.getElementById("envelope-wrapper");
+  if (!envWrapper || envWrapper.classList.contains("opened")) return;
+
+  envWrapper.classList.add("opened");
+
+  // Play music on this user gesture (vital for mobile browsers!)
+  startMusic();
+
+  // Burst hearts and golden sparkles
+  burstEnvelopeParticles();
+
+  // Smooth transition into Screen 2
+  setTimeout(() => {
+    goToScreen(2);
+  }, 1100);
+}
+
+function burstEnvelopeParticles() {
+  const burstContainer = document.getElementById("envelope-burst");
+  if (!burstContainer) return;
+
+  const icons = ["❤️", "💖", "✨", "🌸", "💕", "⭐", "💌"];
+  for (let i = 0; i < 24; i++) {
+    const p = document.createElement("span");
+    p.className = "burst-particle";
+    p.textContent = icons[Math.floor(Math.random() * icons.length)];
+
+    const angle = (Math.PI * 2 * i) / 24 + (Math.random() - 0.5);
+    const dist = 70 + Math.random() * 110;
+    const tx = `${Math.cos(angle) * dist}px`;
+    const ty = `${Math.sin(angle) * dist - 30}px`;
+    const rot = `${(Math.random() - 0.5) * 120}deg`;
+
+    p.style.setProperty("--tx", tx);
+    p.style.setProperty("--ty", ty);
+    p.style.setProperty("--rot", rot);
+
+    burstContainer.appendChild(p);
+
+    setTimeout(() => {
+      p.remove();
+    }, 1300);
+  }
+}
+
+
+// ====================================================================
+// 8. SCREEN 3: CALENDAR ANIMATION
+// ====================================================================
+function triggerCalendarAnimation() {
+  const circlePath = document.getElementById("marker-circle-path");
+  if (circlePath) {
+    circlePath.style.strokeDashoffset = "240";
+    setTimeout(() => {
+      circlePath.style.strokeDashoffset = "0";
+    }, 300);
+  }
+}
+
+
+// ====================================================================
+// 9. SCREEN 4: TYPEWRITER LETTER EFFECT
+// ====================================================================
+function triggerTypewriterLetter() {
+  const target = document.getElementById("typewriter-content");
+  const cursor = document.getElementById("typewriter-cursor");
+  if (!target) return;
+
+  target.textContent = "";
+  if (cursor) cursor.style.display = "inline-block";
+
+  const fullText = CONFIG.messages.letter;
+  let charIndex = 0;
+  typewriterFinished = false;
+
+  if (typewriterTimeout) clearTimeout(typewriterTimeout);
+
+  function typeNextChar() {
+    if (charIndex < fullText.length) {
+      target.textContent += fullText.charAt(charIndex);
+      charIndex++;
+      const char = fullText.charAt(charIndex - 1);
+      const delay = char === "\n" ? 220 : (char === "." || char === "!" ? 180 : 28);
+      typewriterTimeout = setTimeout(typeNextChar, delay);
     } else {
-      // Keep blinking cursor or stop
-      setTimeout(() => {
-        el.style.borderRight = 'none';
-      }, 3000);
+      typewriterFinished = true;
+      if (cursor) cursor.style.display = "none";
     }
   }
 
-  typeNext();
+  setTimeout(typeNextChar, 400);
 }
 
-// ============================================================
-//  CONFETTI & FIREWORKS (Canvas 60fps)
-// ============================================================
-function burstConfetti(count, x, y) {
-  for (let i = 0; i < count; i++) {
+function completeTypewriterInstantly() {
+  if (typewriterTimeout) clearTimeout(typewriterTimeout);
+  const target = document.getElementById("typewriter-content");
+  const cursor = document.getElementById("typewriter-cursor");
+  if (target) target.textContent = CONFIG.messages.letter;
+  if (cursor) cursor.style.display = "none";
+  typewriterFinished = true;
+}
+
+
+// ====================================================================
+// 10. SCREEN 5: "PICK ONE, CHAKSHU" & SUBVIEWS
+// ====================================================================
+function openSubview(subviewId, itemKey) {
+  const subview = document.getElementById(subviewId);
+  if (subview) {
+    subview.classList.remove("hidden");
+  }
+
+  // Mark as opened
+  if (itemKey) {
+    openedPickItems.add(itemKey);
+    const card = document.getElementById(`pick-item-${itemKey}`);
+    const badge = document.getElementById(`badge-${itemKey}`);
+    if (card) card.classList.add("opened");
+    if (badge) badge.textContent = "Opened ✓";
+
+    // Check if all 3 items have been opened
+    if (openedPickItems.size >= 3) {
+      const oneLastThingWrap = document.getElementById("one-last-thing-wrap");
+      if (oneLastThingWrap) {
+        oneLastThingWrap.classList.remove("hidden");
+        oneLastThingWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+  }
+}
+
+function closeSubview(subviewId) {
+  const subview = document.getElementById(subviewId);
+  if (subview) {
+    subview.classList.add("hidden");
+  }
+}
+
+function handleGiftBoxOpen() {
+  const giftBox = document.getElementById("large-gift-box");
+  const giftHint = document.getElementById("gift-tap-hint");
+  const revealedContent = document.getElementById("gift-revealed-content");
+
+  if (!giftBox || giftBox.classList.contains("opened")) return;
+
+  giftBox.classList.remove("shake-animation");
+  giftBox.classList.add("opened");
+  if (giftHint) giftHint.classList.add("hidden");
+
+  // Launch confetti cannons inside gift modal
+  triggerModalConfetti();
+
+  if (revealedContent) {
+    revealedContent.classList.remove("hidden");
+  }
+}
+
+function triggerModalConfetti() {
+  const container = document.getElementById("gift-confetti-cannon");
+  if (!container) return;
+
+  const colors = ["#ff5964", "#f4acb7", "#ffe5d9", "#d8e2dc", "#ffd166", "#06d6a0"];
+  for (let i = 0; i < 40; i++) {
+    const confetti = document.createElement("div");
+    confetti.style.position = "absolute";
+    confetti.style.width = `${Math.random() * 8 + 5}px`;
+    confetti.style.height = `${Math.random() * 12 + 6}px`;
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.borderRadius = "2px";
+    confetti.style.pointerEvents = "none";
+    confetti.style.left = "50%";
+    confetti.style.top = "50%";
+
     const angle = Math.random() * Math.PI * 2;
-    const speed = 4 + Math.random() * 12;
-    confettiParticles.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 6,
-      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-      size: 5 + Math.random() * 7,
-      rotation: Math.random() * 360,
-      rotationSpeed: (Math.random() - 0.5) * 12,
-      shape: Math.random() > 0.4 ? 'rect' : 'circle',
-      gravity: 0.25 + Math.random() * 0.2,
-      life: 1
+    const velocity = Math.random() * 140 + 60;
+    const vx = Math.cos(angle) * velocity;
+    const vy = Math.sin(angle) * velocity - 40;
+
+    confetti.style.transition = "all 1s cubic-bezier(0.25, 1, 0.5, 1)";
+    container.appendChild(confetti);
+
+    requestAnimationFrame(() => {
+      confetti.style.transform = `translate(${vx}px, ${vy}px) rotate(${Math.random() * 720}deg)`;
+      confetti.style.opacity = "0";
     });
+
+    setTimeout(() => confetti.remove(), 1100);
   }
 }
 
-function launchFirework(x, y) {
-  const hue = Math.random() * 360;
-  for (let i = 0; i < 70; i++) {
-    const angle = (i / 70) * Math.PI * 2;
-    const speed = 2 + Math.random() * 7;
-    fireworkParticles.push({
-      x, y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      color: `hsl(${hue + (Math.random() * 50 - 25)}, 100%, 70%)`,
-      size: 2 + Math.random() * 3,
-      gravity: 0.08,
-      life: 1,
-      decay: 0.015 + Math.random() * 0.01
-    });
+
+// ====================================================================
+// 11. LIGHTBOX MODAL FOR ZOOMING MEMORIES
+// ====================================================================
+function openLightbox(index) {
+  lightboxIndex = index;
+  const modal = document.getElementById("lightbox-modal");
+  const img = document.getElementById("lightbox-img");
+  const caption = document.getElementById("lightbox-caption");
+
+  const photo = CONFIG.photos[lightboxIndex] || { url: `assets/photos/${lightboxIndex + 1}.jpg`, caption: "", rotate: 0 };
+
+  if (img) {
+    img.src = photo.url;
+    img.style.transform = `rotate(${photo.rotate || 0}deg) scale(${photo.scale || 1})`;
+    img.style.objectFit = 'cover';
+  }
+  if (caption) {
+    caption.textContent = photo.caption || `Memory #${lightboxIndex + 1}`;
+  }
+  if (modal) {
+    modal.classList.remove("hidden");
   }
 }
 
-function confettiLoop() {
-  if (!confettiCtx || !confettiCanvas) return;
+function closeLightbox() {
+  const modal = document.getElementById("lightbox-modal");
+  if (modal) modal.classList.add("hidden");
+}
 
-  confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+function navigateLightbox(dir) {
+  const total = CONFIG.photos.length;
+  lightboxIndex = (lightboxIndex + dir + total) % total;
+  openLightbox(lightboxIndex);
+}
 
-  // Confetti update
-  confettiParticles = confettiParticles.filter(p => p.life > 0);
-  for (const p of confettiParticles) {
-    p.x  += p.vx;
-    p.y  += p.vy;
-    p.vy += p.gravity;
-    p.vx *= 0.99;
-    p.rotation += p.rotationSpeed;
-    p.life -= 0.009;
 
-    confettiCtx.save();
-    confettiCtx.globalAlpha = Math.max(0, p.life);
-    confettiCtx.fillStyle   = p.color;
-    confettiCtx.translate(p.x, p.y);
-    confettiCtx.rotate((p.rotation * Math.PI) / 180);
+// ====================================================================
+// 12. SCREEN 6: RUNAWAY "NO" BUTTON & "YES" CELEBRATION
+// ====================================================================
+function setupQuestionCard() {
+  const btnNo = document.getElementById("btn-choice-no");
+  const btnYes = document.getElementById("btn-choice-yes");
+  const wrongSticker = document.getElementById("wrong-button-sticker");
+  const choicesContainer = document.getElementById("choices-container");
 
-    if (p.shape === 'rect') {
-      confettiCtx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-    } else {
-      confettiCtx.beginPath();
-      confettiCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-      confettiCtx.fill();
+  if (!btnNo) return;
+
+  let moveCount = 0;
+
+  // Run away on hover, mouse move, pointerdown, or touch
+  function dodgeButton(e) {
+    if (e) e.preventDefault();
+    moveCount++;
+
+    const containerRect = choicesContainer ? choicesContainer.getBoundingClientRect() : { width: 300, height: 100 };
+    const maxX = Math.max(30, containerRect.width - 120);
+    const maxY = Math.max(20, containerRect.height - 50);
+
+    // Calculate a new random offset away from cursor
+    const randomX = (Math.random() - 0.5) * maxX;
+    const randomY = (Math.random() - 0.5) * maxY;
+
+    btnNo.style.position = "relative";
+    btnNo.style.transform = `translate(${randomX}px, ${randomY}px) scale(0.95)`;
+
+    // If she taps repeatedly or touches it
+    if (moveCount > 2 && wrongSticker) {
+      wrongSticker.classList.remove("hidden");
     }
-    confettiCtx.restore();
   }
 
-  // Fireworks update
-  fireworkParticles = fireworkParticles.filter(p => p.life > 0);
-  for (const p of fireworkParticles) {
-    p.x  += p.vx;
-    p.y  += p.vy;
-    p.vy += p.gravity;
-    p.vx *= 0.98;
-    p.life -= p.decay;
+  btnNo.addEventListener("mouseenter", dodgeButton);
+  btnNo.addEventListener("mousemove", dodgeButton);
+  btnNo.addEventListener("touchstart", (e) => {
+    dodgeButton(e);
+  }, { passive: false });
 
-    confettiCtx.save();
-    confettiCtx.globalAlpha = Math.max(0, p.life);
-    confettiCtx.fillStyle   = p.color;
-    confettiCtx.shadowColor = p.color;
-    confettiCtx.shadowBlur  = 6;
-    confettiCtx.beginPath();
-    confettiCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    confettiCtx.fill();
-    confettiCtx.restore();
-  }
-
-  requestAnimationFrame(confettiLoop);
-}
-
-// ============================================================
-//  MUSIC
-// ============================================================
-function setupMusic() {
-  const btn = document.getElementById('music-btn');
-  const audio = document.getElementById('bg-music');
-  if (!btn || !audio) return;
-
-  audio.volume = 0.45;
-
-  btn.addEventListener('click', () => {
-    if (audio.paused) {
-      audio.play().then(() => updateMusicIcon(true)).catch(() => {});
-    } else {
-      audio.pause();
-      updateMusicIcon(false);
+  btnNo.addEventListener("click", (e) => {
+    e.preventDefault();
+    dodgeButton(e);
+    if (wrongSticker) {
+      wrongSticker.classList.remove("hidden");
     }
   });
 
-  // Try auto-play on first user interaction anywhere
-  const playOnce = () => {
-    if (audio.paused) {
-      audio.play().then(() => updateMusicIcon(true)).catch(() => {});
-    }
-    window.removeEventListener('pointerdown', playOnce);
-  };
-  window.addEventListener('pointerdown', playOnce, { once: true });
+  // Option YES clicked: Massive celebration!
+  if (btnYes) {
+    btnYes.addEventListener("click", handleYesClicked);
+  }
 }
 
-function updateMusicIcon(isPlaying) {
-  const icon = document.getElementById('music-icon');
-  if (icon) {
-    icon.textContent = isPlaying ? '🎵' : '🔇';
+function handleYesClicked() {
+  const questionCard = document.getElementById("question-card");
+  const celebrationContainer = document.getElementById("celebration-container");
+
+  if (questionCard) questionCard.classList.add("hidden");
+  if (celebrationContainer) celebrationContainer.classList.remove("hidden");
+
+  // Massive Confetti & Heart Burst
+  launchMassiveCelebration();
+}
+
+function launchMassiveCelebration() {
+  const canvas = document.getElementById("scrapbook-canvas");
+  if (canvas && window.scrapbookAddCelebrationBurst) {
+    window.scrapbookAddCelebrationBurst();
   }
+}
+
+function resetStory() {
+  const questionCard = document.getElementById("question-card");
+  const celebrationContainer = document.getElementById("celebration-container");
+  const envWrapper = document.getElementById("envelope-wrapper");
+
+  if (celebrationContainer) celebrationContainer.classList.add("hidden");
+  if (questionCard) questionCard.classList.remove("hidden");
+  if (envWrapper) envWrapper.classList.remove("opened");
+
+  const btnNo = document.getElementById("btn-choice-no");
+  if (btnNo) {
+    btnNo.style.transform = "none";
+  }
+
+  const wrongSticker = document.getElementById("wrong-button-sticker");
+  if (wrongSticker) wrongSticker.classList.add("hidden");
+
+  goToScreen(1);
+}
+
+
+// ====================================================================
+// 13. AUDIO ENGINE & SYNTHESIZER FALLBACK
+// ====================================================================
+function setupAudio() {
+  const audio = document.getElementById("bg-music");
+  if (audio) {
+    audio.src = CONFIG.song.src;
+    audio.addEventListener("timeupdate", updateSpotifyProgressBar);
+    audio.addEventListener("ended", () => {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    });
+  }
+}
+
+function startMusic() {
+  const audio = document.getElementById("bg-music");
+  isMusicPlaying = true;
+  updateMusicUIState(true);
+
+  if (audio) {
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // Fallback: If audio file is missing or fails to decode, run Web Audio Synth!
+        startWebAudioMusicBox();
+      });
+    }
+  } else {
+    startWebAudioMusicBox();
+  }
+}
+
+function toggleMusic() {
+  const audio = document.getElementById("bg-music");
+  if (isMusicPlaying) {
+    isMusicPlaying = false;
+    updateMusicUIState(false);
+    if (audio) audio.pause();
+    stopWebAudioMusicBox();
+  } else {
+    startMusic();
+  }
+}
+
+function updateMusicUIState(playing) {
+  const musicToggle = document.getElementById("global-music-toggle");
+  const vinylDisc = document.querySelector(".vinyl-disc");
+  const vinylIcon = document.getElementById("vinyl-status-icon");
+
+  if (musicToggle) {
+    if (playing) musicToggle.classList.add("playing");
+    else musicToggle.classList.remove("playing");
+  }
+
+  if (vinylDisc) {
+    if (playing) vinylDisc.classList.add("playing");
+    else vinylDisc.classList.remove("playing");
+  }
+
+  if (vinylIcon) {
+    vinylIcon.textContent = playing ? "⏸" : "▶";
+  }
+}
+
+function updateSpotifyProgressBar() {
+  const audio = document.getElementById("bg-music");
+  const progressFill = document.getElementById("spotify-progress-fill");
+  const timeCurrent = document.getElementById("time-current");
+  const timeTotal = document.getElementById("time-total");
+
+  if (!audio || !progressFill) return;
+
+  const cur = audio.currentTime || 0;
+  const dur = audio.duration || 220; // fallback default 3:40
+
+  const pct = (cur / dur) * 100;
+  progressFill.style.width = `${Math.min(pct, 100)}%`;
+
+  if (timeCurrent) {
+    const mins = Math.floor(cur / 60);
+    const secs = Math.floor(cur % 60);
+    timeCurrent.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+  if (timeTotal && !isNaN(audio.duration)) {
+    const dMins = Math.floor(dur / 60);
+    const dSecs = Math.floor(dur % 60);
+    timeTotal.textContent = `${dMins}:${dSecs < 10 ? '0' : ''}${dSecs}`;
+  }
+}
+
+/**
+ * Romantic Music Box Synthesizer (Web Audio API)
+ * Plays a warm, soothing romantic melody if no mp3 is present
+ */
+function startWebAudioMusicBox() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!audioContext) audioContext = new AudioCtx();
+    if (audioContext.state === "suspended") audioContext.resume();
+
+    stopWebAudioMusicBox();
+
+    // Romantic melody note frequencies (in Hz)
+    const melody = [
+      261.63, 329.63, 392.00, 523.25, 493.88, 392.00, 329.63,
+      349.23, 440.00, 523.25, 440.00, 392.00, 329.63, 293.66,
+      261.63, 329.63, 392.00, 440.00, 392.00, 349.23, 329.63,
+      293.66, 329.63, 349.23, 392.00, 329.63, 293.66, 261.63
+    ];
+    let noteIdx = 0;
+
+    synthInterval = setInterval(() => {
+      if (!isMusicPlaying) return;
+      playMusicBoxNote(melody[noteIdx % melody.length]);
+      noteIdx++;
+    }, 450);
+  } catch (e) {
+    console.warn("AudioContext error:", e);
+  }
+}
+
+function playMusicBoxNote(freq) {
+  if (!audioContext) return;
+  try {
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+
+    gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1.2);
+
+    osc.connect(gain);
+    gain.connect(audioContext.destination);
+
+    osc.start();
+    osc.stop(audioContext.currentTime + 1.25);
+  } catch (e) {}
+}
+
+function stopWebAudioMusicBox() {
+  if (synthInterval) {
+    clearInterval(synthInterval);
+    synthInterval = null;
+  }
+}
+
+
+// ====================================================================
+// 14. 60FPS BACKGROUND CANVAS: FLOATING HEARTS & FALLING PETALS
+// ====================================================================
+function setupCanvas() {
+  const canvas = document.getElementById("scrapbook-canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  window.addEventListener("resize", () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const particles = [];
+  const maxParticles = 28;
+
+  class ScrapParticle {
+    constructor(isBurst = false) {
+      this.reset(isBurst);
+    }
+
+    reset(isBurst = false) {
+      this.isPetal = Math.random() > 0.45;
+      this.isBurst = isBurst;
+
+      this.x = Math.random() * width;
+      this.y = isBurst ? height * 0.5 + (Math.random() - 0.5) * 100 : Math.random() * height;
+
+      if (this.isPetal) {
+        // Petal falls downward with sway
+        this.vy = Math.random() * 0.8 + 0.4;
+        this.vx = (Math.random() - 0.5) * 0.6;
+        this.size = Math.random() * 8 + 6;
+        this.color = Math.random() > 0.5 ? "rgba(255, 182, 193, 0.45)" : "rgba(248, 165, 181, 0.5)";
+      } else {
+        // Heart floats upward softly
+        this.vy = -(Math.random() * 0.7 + 0.35);
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.size = Math.random() * 10 + 8;
+        this.color = Math.random() > 0.5 ? "rgba(225, 45, 75, 0.4)" : "rgba(255, 105, 135, 0.45)";
+      }
+
+      if (isBurst) {
+        this.vx = (Math.random() - 0.5) * 6;
+        this.vy = (Math.random() - 0.8) * 8;
+        this.size = Math.random() * 14 + 10;
+      }
+
+      this.angle = Math.random() * Math.PI * 2;
+      this.angularSpeed = (Math.random() - 0.5) * 0.03;
+      this.opacity = Math.random() * 0.4 + 0.3;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.angle += this.angularSpeed;
+
+      if (this.isBurst) {
+        this.vy += 0.08; // gravity for burst
+        this.opacity -= 0.008;
+        return;
+      }
+
+      // Loop particles seamlessly
+      if (this.isPetal && this.y > height + 20) {
+        this.y = -20;
+        this.x = Math.random() * width;
+      } else if (!this.isPetal && this.y < -20) {
+        this.y = height + 20;
+        this.x = Math.random() * width;
+      }
+
+      if (this.x < -20) this.x = width + 20;
+      if (this.x > width + 20) this.x = -20;
+    }
+
+    draw(c) {
+      if (this.opacity <= 0) return;
+      c.save();
+      c.translate(this.x, this.y);
+      c.rotate(this.angle);
+      c.globalAlpha = Math.max(0, this.opacity);
+
+      if (this.isPetal) {
+        // Draw delicate botanical petal
+        c.fillStyle = this.color;
+        c.beginPath();
+        c.ellipse(0, 0, this.size, this.size * 0.55, 0, 0, Math.PI * 2);
+        c.fill();
+      } else {
+        // Draw soft heart
+        c.fillStyle = this.color;
+        c.beginPath();
+        const s = this.size * 0.5;
+        c.moveTo(0, s * 0.3);
+        c.bezierCurveTo(-s, -s * 0.7, -s * 1.5, s * 0.4, 0, s * 1.4);
+        c.bezierCurveTo(s * 1.5, s * 0.4, s, -s * 0.7, 0, s * 0.3);
+        c.fill();
+      }
+
+      c.restore();
+    }
+  }
+
+  // Initialize pool of ambient particles
+  for (let i = 0; i < maxParticles; i++) {
+    particles.push(new ScrapParticle());
+  }
+
+  // Hook for celebration burst
+  window.scrapbookAddCelebrationBurst = function() {
+    for (let i = 0; i < 90; i++) {
+      particles.push(new ScrapParticle(true));
+    }
+  };
+
+  // Main 60fps render loop
+  function loop() {
+    ctx.clearRect(0, 0, width, height);
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.update();
+      p.draw(ctx);
+      if (p.isBurst && p.opacity <= 0) {
+        particles.splice(i, 1);
+      }
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
 }
