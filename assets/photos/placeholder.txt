@@ -1,0 +1,18 @@
+📸 PHOTO INSTRUCTIONS
+======================
+
+Place your photos in this folder with these exact filenames:
+  - photo1.jpg
+  - photo2.jpg
+  - photo3.jpg
+  - photo4.jpg
+  - photo5.jpg
+
+TIPS:
+  • Portrait (vertical) or landscape photos both work — the carousel will crop them to fill the frame.
+  • Recommended resolution: at least 800×600 px for crisp display.
+  • JPG / PNG / WEBP are all supported — just update the filenames in CONFIG.photos inside script.js.
+  • To add more photos, add more filenames to the CONFIG.photos array in script.js.
+
+If a photo is missing, the carousel will show a cute placeholder instead — no errors! 🌸
+

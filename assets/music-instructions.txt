@@ -1,0 +1,29 @@
+🎵 BACKGROUND MUSIC INSTRUCTIONS
+==================================
+
+To add background music to the website:
+
+1. Find a romantic / soft instrumental MP3 you love.
+   Suggestions: "Perfect" (Ed Sheeran instrumental), "A Thousand Years" (Christina Perri instrumental),
+                any soft lo-fi or romantic piano track.
+
+2. Rename the file to: music.mp3
+
+3. Place it inside the assets/ folder so the path is:
+     assets/music.mp3
+
+4. The music will auto-play (softly at 40% volume) when the user taps "Open your surprise".
+   The 🎵 button in the top-right corner lets them toggle it on/off.
+
+NOTE:
+  • Keep the file small (< 5 MB ideally) for fast loading.
+  • If no music.mp3 is present, the site works perfectly fine — music button will just do nothing.
+  • MP3 format has the best browser compatibility.
+
+ROYALTY-FREE SOURCES:
+  • https://pixabay.com/music/
+  • https://freemusicarchive.org/
+  • https://incompetech.com/
+
+Enjoy! 🌸💖
+

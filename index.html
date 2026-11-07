@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Happy Birthday Chakshu 🎂</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- Fixed background photo -->
+  <div class="bg-photo"></div>
+  <!-- Dark overlay -->
+  <div class="bg-overlay"></div>
+
+  <!-- Confetti / fireworks canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Balloon container -->
+  <div id="balloon-container"></div>
+
+  <!-- Music button -->
+  <button id="music-btn" class="music-btn" aria-label="Toggle music">
+    <span id="music-icon">🔇</span>
+  </button>
+  <audio id="bg-music" loop preload="none">
+    <source src="assets/music.mp3" type="audio/mpeg"/>
+  </audio>
+
+  <!-- ===== MAIN PAGE ===== -->
+  <main class="main-wrap">
+
+    <!-- COUNTDOWN STATE -->
+    <div id="countdown-view" class="view">
+      <p class="pre-label">🌙 counting down to something magical</p>
+      <h1 class="hero-title">Something special is coming,<br><span class="name-rose" id="hero-name"></span>...</h1>
+
+      <div class="clock-wrap glass-box">
+        <div class="clock-grid">
+          <div class="clock-unit">
+            <div class="clock-num" id="d-num">00</div>
+            <div class="clock-label">Days</div>
+          </div>
+          <div class="clock-sep">:</div>
+          <div class="clock-unit">
+            <div class="clock-num" id="h-num">00</div>
+            <div class="clock-label">Hours</div>
+          </div>
+          <div class="clock-sep">:</div>
+          <div class="clock-unit">
+            <div class="clock-num" id="m-num">00</div>
+            <div class="clock-label">Minutes</div>
+          </div>
+          <div class="clock-sep">:</div>
+          <div class="clock-unit">
+            <div class="clock-num" id="s-num">00</div>
+            <div class="clock-label">Seconds</div>
+          </div>
+        </div>
+        <p id="subtitle" class="subtitle">The countdown has begun... 🌸</p>
+      </div>
+    </div>
+
+    <!-- BIRTHDAY STATE (shown at midnight) -->
+    <div id="bday-view" class="view hidden">
+      <h1 class="bday-heading" id="bday-heading"></h1>
+      <div class="message-box glass-box">
+        <p id="typewriter" class="typewriter"></p>
+        <p class="from-line">— with love 💖</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
